@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -29,6 +30,15 @@ class ProjectListCreateView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ProjectDetailView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProjectSerializer
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        return Projects.objects.filter(members=self.request.user)
+
+
 class ProjectMemberApiView(APIView):
     permission_classes = [IsAuthenticated]
 
