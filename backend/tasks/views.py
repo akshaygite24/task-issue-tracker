@@ -41,9 +41,17 @@ class TaskDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Tasks.objects.filter(
+            project__members=self.request.user
+        )
+
+
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes.append(IsTaskEditor)
+            return [IsAuthenticated(), IsTaskEditor()]
+
         elif self.request.method == 'DELETE':
-            self.permission_classes.append(IsTaskDeletor)
-        return super().get_permissions()
+            return [IsAuthenticated(), IsTaskDeletor()]
+        
+        return [IsAuthenticated()]

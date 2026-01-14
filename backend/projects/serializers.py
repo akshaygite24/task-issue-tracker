@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Projects
-
+from django.contrib.auth.models import User
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +23,18 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return Project
 
+
+class ProjectMemberSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+
+    def validate_user_id(self, value):
+        try:
+            user = User.objects.get(id=value)
+            return user
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User with this ID does not exist.")
+        
+class ProjectMemberListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
