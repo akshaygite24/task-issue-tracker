@@ -9,6 +9,8 @@ from .serializers import TaskSerializer
 from .permissions import IsTaskEditor, IsTaskDeletor
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
+from common.paginator import DefaultPaginator
+
 class TaskListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -34,8 +36,12 @@ class TaskListCreateView(APIView):
         if assigned_to_param:
             queryset =queryset.filter(assigned_to_id=assigned_to_param)
     
-        serializer = TaskSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = DefaultPaginator()
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+
+
+        serializer = TaskSerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
 
     def post(self, request):
