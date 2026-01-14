@@ -13,13 +13,31 @@ class TaskListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        tasks = Tasks.objects.filter(
+        queryset = Tasks.objects.filter(
             project__members=request.user
         )
 
-        serializer = TaskSerializer(tasks, many=True)
+        project_id = request.query_params.get('project_id')
+        status_param = request.query_params.get('status')
+        priority_param = request.query_params.get('priority')
+        assigned_to_param = request.query_params.get('assigned_to')
+
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+        
+        if status_param:
+            queryset =queryset.filter(status=status_param)  
+        
+        if priority_param:
+            queryset =queryset.filter(priority=priority_param)
+
+        if assigned_to_param:
+            queryset =queryset.filter(assigned_to_id=assigned_to_param)
+    
+        serializer = TaskSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+
     def post(self, request):
         serializer = TaskSerializer(
             data=request.data,
