@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from .serializers import RegisterSerializer, LoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 class RegisterView(APIView):
@@ -51,3 +51,17 @@ class LoginAPIView(APIView):
             status=status.HTTP_200_OK,
             )
     
+class UserSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get('q', '').strip()
+
+        if not query or len(query) < 2:
+            return Response([], status=status.HTTP_200_OK)
+        
+        users = User.objects.filter(
+            username__icontains=query
+        ).values('id', 'username')[:10]
+
+        return Response(list(users), status=status.HTTP_200_OK)
